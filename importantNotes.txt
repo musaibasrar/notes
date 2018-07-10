@@ -37,6 +37,19 @@ after creating the branch in git. write command git fetch to get all the branche
 
 
 
+Free webhosting 
+
+https://www.biz.nf/co.nf-domain.php
+
+
+hioxindia.com
+vrkwebservices
+hostsoch
+
+
+
+
+
 // transfer file to the remote location 
 
 File folder = new File("Pathofthefolder");
@@ -55,3 +68,164 @@ File folder = new File("Pathofthefolder");
                         channelSftp.put(inputStream, pathOfRemoteserver+f.getName());
                 }
             }
+			
+			
+			
+			
+Uploading Files using JSP. Files:
+
+In the html file
+
+<form method="post" enctype="multipart/form-data" name="Form" >
+
+  <input type="file" name="fFoto" id="fFoto" value="" /></td>
+  <input type="file" name="fResumen" id="fResumen" value=""/>
+In the JSP File or Servlet
+
+    InputStream isFoto = request.getPart("fFoto").getInputStream();
+    InputStream isResu = request.getPart("fResumen").getInputStream();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte buf[] = new byte[8192];
+    int qt = 0;
+    while ((qt = isResu.read(buf)) != -1) {
+      baos.write(buf, 0, qt);
+    }
+    String sResumen = baos.toString();
+	
+	
+	
+	//file download
+	public boolean downlaodFile() {
+		boolean result = false;
+		try {
+
+			// construct the complete absolute path of the file
+			URL url = null;
+			URLConnection con = null;
+			url = new URL("http://searchmysearch.com/musarpbiabha/studentsdetails.xlsx");
+			con = url.openConnection();
+			
+			BufferedInputStream bis = new BufferedInputStream(
+					con.getInputStream());
+			// get MIME type of the file
+			String mimeType = "application/vnd.ms-excel";
+
+			// set content attributes for the response
+			response.setContentType(mimeType);
+			// response.setContentLength((int) bis.length());
+
+			// set headers for the response
+			String headerKey = "Content-Disposition";
+			String headerValue = String.format("attachment; filename=\"%s\"",
+					"studentdetails.xlsx");
+			response.setHeader(headerKey, headerValue);
+
+			// get output stream of the response
+			OutputStream outStream = response.getOutputStream();
+
+			byte[] buffer = new byte[BUFFER_SIZE];
+			int bytesRead = -1;
+
+			// write bytes read from the input stream into the output stream
+			while ((bytesRead = bis.read(buffer)) != -1) {
+				outStream.write(buffer, 0, bytesRead);
+			}
+
+			bis.close();
+			outStream.close();
+			result = true;
+		} catch (Exception e) {
+			System.out.println("" + e);
+		}
+		return result;
+	}
+	
+			
+			// file upload
+	public boolean uploadAttendanceFile() throws IOException {
+
+		try {
+			List<FileItem> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+		
+			 for (FileItem item : items) {
+		                // Process form file field (input type="file").
+		                String fieldName = item.getFieldName();
+
+		                if (fieldName.equalsIgnoreCase("file")) {
+		                   
+		                    BufferedInputStream bis = new BufferedInputStream(item.getInputStream());
+		                    
+		                    BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(System.getProperty("java.io.tmpdir")+"attendancesheet.xlsx"));
+		                    byte[] buffer = new byte[BUFFER_SIZE];
+		        			int bytesRead = -1;
+
+		        			// write bytes read from the input stream into the output stream
+		        			while ((bytesRead = bis.read(buffer)) != -1) {
+		        				out.write(buffer, 0, bytesRead);
+		        			}
+
+		        			bis.close();
+		        			out.close();
+		                }
+		        }
+			 
+			 
+			 //***************
+			
+			 
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+			
+			
+			
+			// incrementing the months
+			
+			for (int j = 0; j < 3; j++) {
+			calendar.add(Calendar.MONTH, 1);
+			calendar.set(Calendar.DAY_OF_MONTH, 1);
+			calendar.add(Calendar.DATE, -1);
+			Date lastDayOfMonth = calendar.getTime();
+
+			final Collection<LoanTransactionData> currentLoanRepayments = loanReadPlatformService
+					.retrieveLoanTransactionsMonthlyPayments(loanId,
+							new SimpleDateFormat("yyyy-MM-dd").format(date),
+							new SimpleDateFormat("yyyy-MM-dd").format(lastDayOfMonth));
+
+			for (LoanTransactionData loanTransactionData : currentLoanRepayments) {
+				repaymentAmount = repaymentAmount.add(loanTransactionData.getAmount());
+			}
+			calendar.add(Calendar.MONTH, +1);
+			calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+			date = calendar.getTime();
+		}
+		
+		
+		//loop between dates
+for (Date date = start.getTime(); start.before(end); start.add(Calendar.DATE, 1), date = start.getTime()) {
+			    // Do your job here with `date`.
+			    System.out.println(new SimpleDateFormat("dd-MM-YYYY").format(date) );
+			    
+			    
+			}
+			
+			
+	//accounts
+	https://sol.du.ac.in/mod/book/view.php?id=1240&chapterid=902
+	
+	//DNS
+	www.dnswatch.info
+	
+	//snaphomework
+	//uolonotes
+	//sakai
+	
+	
+	Multitanent using hibernate
+	------------------------------------------------------------------------
+	https://gist.github.com/piyasde/cf4861a244e137f8b526
+
+	https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation
+	
