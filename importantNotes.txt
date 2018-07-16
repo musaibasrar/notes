@@ -229,3 +229,8 @@ for (Date date = start.getTime(); start.before(end); start.add(Calendar.DATE, 1)
 
 	https://dzone.com/articles/spring-boot-hibernate-multitenancy-implementation
 	
+	
+	html to PDF
+	----------------------------------------------------------
+	https://micropyramid.com/blog/export-html-web-page-to-pdf-using-jspdf/
+	
