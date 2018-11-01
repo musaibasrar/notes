@@ -1,0 +1,113 @@
+no. of branches: (Branches)
+select count(*) as TOTAL_BRANCHES FROM `m-default`.m_office; 
+
+
+total no. of membership :
+consolidated -> select count(*) as total_members from `m-default`.m_client;
+branchwise (Member per branch) -> select
+ concat(repeat("..",
+    ((LENGTH(ounder.`hierarchy`) - LENGTH(REPLACE(ounder.`hierarchy`, '.', '')) - 1))), ounder.`name`) as "Office/Branch",
+  count(*) as "Total Members"
+ from m_office o
+ join m_office ounder on ounder.hierarchy like concat(o.hierarchy, '%')
+ and ounder.hierarchy like concat('${currentUserHierarchy}', '%')
+ join m_client c on c.office_id = ounder.id
+ left join r_enum_value r on r.enum_name = 'status_enum' and r.enum_id = c.status_enum
+ where o.id = ${officeId}
+ order by ounder.hierarchy, c.account_no
+
+Share Capital:
+consolidated -> select sum(sp.capital_amount) as SHARE_CAPITAL from m_share_product sp;
+branchwise - > Not possible
+
+Total deposit balance:
+consolidate -> select sum(account_balance_derived) from `m-default`.m_savings_account;
+Branchwise -> (Total Deposit Balance Per Branch) select sum(sa.account_balance_derived) as 'Total Deposit Balance'
+ from m_savings_account as sa 
+ left join m_client as cl on sa.client_id = cl.id 
+ where cl.office_id = ${officeId}
+
+loan disbursed during the year:
+consolidate -> select count(*) as 'TOTAL LAONS DISBURSED' from m_loan l where l.disbursedon_date between '${startDate}' and '${endDate}' and l.loan_status_id = 300
+branchwise -> Active loans by disbursal period
+
+total loan outstanding:
+consolidate -> SELECT sum(principal_outstanding_derived) FROM m_loan;
+branchwise ->(total loan outstanding per branch custom) SELECT sum(principal_outstanding_derived) FROM m_loan l left join m_client as cl on l.client_id = cl.id 
+where cl.office_id = ${officeId};
+
+amount of loan recovery:
+consolidate -> SELECT sum(principal_repaid_derived) FROM m_loan;
+branchwise ->(total loan recovery per branch custom) SELECT sum(principal_repaid_derived) FROM m_loan l left join m_client as cl on l.client_id = cl.id 
+where cl.office_id = ${officeId};
+
+Total Active Deposit Accounts:
+consolidate -> select count(*) as 'Total active deposit' from m_savings_account where status_enum = 300;
+branchwise ->  (total active deposit accounts) select count(*) as 'Total active deposit'
+ from m_savings_account as sa 
+ left join m_client as cl on sa.client_id = cl.id 
+ where cl.office_id = ${officeId} and sa.status_enum = 300
+ 
+Total Active Loan Accounts:
+consolidate -> select count(*) as 'Total active loan' from m_loan where loan_status_id = 300;
+branchwise ->   (total active loan accounts)  select count(*) as 'Total active loan'
+ from m_loan as l 
+ left join m_client as cl on l.client_id = cl.id 
+ where cl.office_id = ${officeId} and l.loan_status_id = 300
+ 
+npa: 
+consolidate -> SELECT count(*) FROM m_loan where is_npa=1;
+branchwise -> select count(*) as 'NPA'
+ from m_loan as l 
+ left join m_client as cl on l.client_id = cl.id 
+ where cl.office_id = ${officeId} and is_npa=1
+---------------------------------------------------------------------------------------------------------------------------------
+consolidated report all branches
+
+select totalbranch.TOTAL_BRANCHES as "Total Branches", totalmembers.TOTAL_MEMBERS as "Total Members", capitalamount.SHARE_CAPITAL as "Share Capital",  
+totaldepositbalance.TOTAL_DEPOSIT_BALANCE as "Total Deposit Balance",totalloanoutstanding.TOTAL_LOAN_OUTSTANDING as "Total Loan Outstanding",
+totalloanrepaid.TOTAL_LOAN_REPAID as "Total Loan Repaid", totalactivedeposit.Total_active_deposit as "Total Active Deposit", totalactiveloan.Total_active_loan as "Total Active Loan"
+from
+(select count(*) as 'TOTAL_BRANCHES' FROM m_office) totalbranch,
+(select count(*) as 'TOTAL_MEMBERS' from m_client) totalmembers,
+(select sum(sp.capital_amount) as 'SHARE_CAPITAL' from m_share_product sp) capitalamount,
+(select sum(account_balance_derived) AS 'TOTAL_DEPOSIT_BALANCE' from m_savings_account) totaldepositbalance,
+(SELECT sum(principal_outstanding_derived) As 'TOTAL_LOAN_OUTSTANDING' FROM m_loan) totalloanoutstanding,
+(SELECT sum(principal_repaid_derived) As 'TOTAL_LOAN_REPAID' FROM m_loan) totalloanrepaid,
+(select count(*) as 'Total_active_deposit' from m_savings_account where status_enum = 300) totalactivedeposit,
+(select count(*) as 'Total_active_loan' from m_loan where loan_status_id = 300) totalactiveloan;
+
+------------------------------------------------------------------------------------------------------------------------------------
+consolidated report per branch
+
+select totalmembers.TOTAL_MEMBERS as "Total Members",
+totaldepositbalance.TOTAL_DEPOSIT_BALANCE as "Total Deposit Balance",totalloanoutstanding.TOTAL_LOAN_OUTSTANDING as "Total Loan Outstanding",
+totalloanrepaid.TOTAL_LOAN_REPAID as "Total Loan Repaid", totalactivedeposit.Total_active_deposit as "Total Active Deposit", totalactiveloan.Total_active_loan as "Total Active Loan"
+from
+(select
+ concat(repeat("..",
+    ((LENGTH(ounder.`hierarchy`) - LENGTH(REPLACE(ounder.`hierarchy`, '.', '')) - 1))), ounder.`name`) as "Office/Branch",
+  count(*) as "TOTAL_MEMBERS"
+ from m_office o
+ join m_office ounder on ounder.hierarchy like concat(o.hierarchy, '%')
+ and ounder.hierarchy like concat('${currentUserHierarchy}', '%')
+ join m_client c on c.office_id = ounder.id
+ left join r_enum_value r on r.enum_name = 'status_enum' and r.enum_id = c.status_enum
+ where o.id = ${officeId}
+ order by ounder.hierarchy, c.account_no) totalmembers,
+(select sum(sa.account_balance_derived) as 'TOTAL_DEPOSIT_BALANCE'
+ from m_savings_account as sa 
+ left join m_client as cl on sa.client_id = cl.id 
+ where cl.office_id = ${officeId}) totaldepositbalance,
+(SELECT sum(principal_outstanding_derived) as 'TOTAL_LOAN_OUTSTANDING' FROM m_loan l left join m_client as cl on l.client_id = cl.id 
+where cl.office_id = ${officeId}) totalloanoutstanding,
+(SELECT sum(principal_repaid_derived) as TOTAL_LOAN_REPAID FROM m_loan l left join m_client as cl on l.client_id = cl.id 
+where cl.office_id = ${officeId}) totalloanrepaid,
+(select count(*) as 'Total_active_deposit'
+ from m_savings_account as sa 
+ left join m_client as cl on sa.client_id = cl.id 
+ where cl.office_id = ${officeId} and sa.status_enum = 300) totalactivedeposit,
+(select count(*) as 'Total_active_loan'
+ from m_loan as l 
+ left join m_client as cl on l.client_id = cl.id 
+ where cl.office_id = ${officeId} and l.loan_status_id = 300) totalactiveloan;
