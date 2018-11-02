@@ -1,0 +1,35 @@
+select totalbranch.TOTAL_BRANCHES as "Total Branches", totalmembers.TOTAL_MEMBERS as "Total Members", capitalamount.SHARE_CAPITAL as "Share Capital",  
+totaldepositmobilized.TOTAL_DEPOSIT_Mobilized as "Total Deposit Mobilized",
+totaldepositbalance.TOTAL_DEPOSIT_BALANCE as "Total Deposit Balance",
+totaldepositactive.TOTAL_DEPOSIT_ACTIVE as "Total Active Deposit",
+totalloansdisbursed.TOTAL_LAONS_DISBURSED as "No. of Loans Disbursed",
+totalapprovedprincipal.TOTAL_APPROVED_PRICIPAL as "Amount of Loan Disbursed",
+outstandingduringperiod.OUTSTANDING_DURING_PERIOD as "Total Loan Outstanding During Period",
+loanrepaidduringperiod.REPAID_DURING_PERIOD as "Total Loan Repaid During the Period",
+totalactiveloan.Total_active_loan as "Total Active Loan",
+expenditure.EXPENDITURE as "Expenditure During The Period",
+income.INCOME as "Income During The Period"
+from
+(select count(*) as 'TOTAL_BRANCHES' FROM m_office) totalbranch,
+(select count(*) as 'TOTAL_MEMBERS' from m_client) totalmembers,
+(select sum(sp.capital_amount) as 'SHARE_CAPITAL' from m_share_product sp) capitalamount,
+(select sum(total_deposits_derived) AS 'TOTAL_DEPOSIT_Mobilized' from m_savings_account where submittedon_date between '${startDate}' and '${endDate}') totaldepositmobilized,
+(select sum(account_balance_derived) AS 'TOTAL_DEPOSIT_BALANCE' from m_savings_account) totaldepositbalance,
+(select sum(total_deposits_derived) AS 'TOTAL_DEPOSIT_ACTIVE' from m_savings_account where status_enum = 300) totaldepositactive,
+(select count(*) as 'TOTAL_LAONS_DISBURSED' from m_loan l where l.disbursedon_date between '${startDate}' and '${endDate}') totalloansdisbursed,
+(select sum(approved_principal) AS 'TOTAL_APPROVED_PRICIPAL' from m_loan l where l.disbursedon_date between '${startDate}' and '${endDate}')totalapprovedprincipal,
+(select sum(outstanding) AS 'OUTSTANDING_DURING_PERIOD' from `mifostenant-default`.m_loan_transaction mltouter,
+(select min(outstanding_loan_balance_derived) as outstanding, id from `mifostenant-default`.m_loan_transaction as tt
+where tt.transaction_date between '${startDate}' and '${endDate}' and transaction_type_enum =2
+group by loan_id) mltinner where mltinner.id = mltouter.id) outstandingduringperiod,
+(SELECT sum(principal_portion_derived) AS 'REPAID_DURING_PERIOD' FROM `mifostenant-default`.m_loan_transaction 
+where transaction_date between '${startDate}' and '${endDate}' and transaction_type_enum=2) loanrepaidduringperiod,
+(select count(*) as 'Total_active_loan' from m_loan where loan_status_id = 300) totalactiveloan,
+(SELECT sum(amount) as EXPENDITURE FROM `mifostenant-default`.acc_gl_journal_entry accgle, 
+`mifostenant-default`.acc_gl_account accgl
+where accgle.account_id = accgl.id and accgl.classification_enum = 5
+and accgle.entry_date between '${startDate}' and '${endDate}') expenditure,
+(SELECT sum(amount) as INCOME FROM `mifostenant-default`.acc_gl_journal_entry accgle, 
+`mifostenant-default`.acc_gl_account accgl
+where accgle.account_id = accgl.id and accgl.classification_enum = 4
+and accgle.entry_date between '${startDate}' and '${endDate}') income;
