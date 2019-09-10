@@ -111,3 +111,23 @@ where cl.office_id = ${officeId}) totalloanrepaid,
  from m_loan as l 
  left join m_client as cl on l.client_id = cl.id 
  where cl.office_id = ${officeId} and l.loan_status_id = 300) totalactiveloan;
+ 
+ Share Certificate Pentaho
+ ---------------------------------------
+ SELECT
+     mc.`firstname`,
+     mc.`id`,
+     msat.`total_shares`,
+     ms.`approved_date`,
+	 msac.`cert_num`,
+	 msac.`from_num`,
+	 msac.`to_num`
+	
+FROM
+     `m_client` mc,`m_share_account` ms, `m_share_account_transactions` msat,
+	  m_share_account_certificate msac
+
+where mc.`id` = ms.`client_id` and msat.`id` = msac.`share_transaction_id` 
+and   msac.`share_account_id` = ms.`id`
+and
+	 msat.`id` = ${transactionId}
